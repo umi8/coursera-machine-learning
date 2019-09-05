@@ -62,25 +62,89 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+% compute hypothesis
+a1 = [ones(m,1) X];
+z2 = a1 * Theta1';
+a2 = sigmoid(z2);
+a2 = [ones(m,1) a2];
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);
+h = a3;
 
+% create num_labels vector
+labels = 1:num_labels;
 
+for i = 1:m
+  for k = 1:num_labels
+     yi = (labels == y(i));
+     J += -yi(k) * log(h(i,k)) - (1 - yi(k)) * log(1 - h(i,k));
+  endfor
+endfor
 
+theta1_sum = 0;
+Theta1_rest = Theta1(:,2:end);
+for j = 1:hidden_layer_size
+  for k = 1:input_layer_size
+    theta1_sum += Theta1_rest(j,k) ^ 2;
+  endfor
+endfor
 
+theta2_sum = 0;
+Theta2_rest = Theta2(:,2:end);
+for j = 1:num_labels
+  for k = 1:hidden_layer_size
+    theta2_sum += Theta2_rest(j,k) ^ 2;
+  endfor
+endfor
 
+% compute regularization parameter
+r = lambda / 2 / m * (theta1_sum + theta2_sum);
 
-
-
-
-
-
-
-
-
-
-
-
+% compute J
+J = 1 / m * J + r;
 
 % -------------------------------------------------------------
+
+Delta_2 = zeros(size(Theta2));
+Delta_1 = zeros(size(Theta1));
+
+for t = 1:m
+  %Step 1:Compute a3 for t
+  a_1 = X(t,:)'; % 400*1
+  a_1 = [1 ; a_1]; % 401*1
+  z_2 = Theta1 * a_1; % 25*1 
+  a_2 = sigmoid(z_2); % 25*1
+  a_2 = [1 ; a_2]; % 26*1
+  z_3 = Theta2 * a_2; % 10*1
+  a_3 = sigmoid(z_3); % 10_1
+
+  % Step 2: Compute delta in layer 3
+  y_bin = (labels == y(t));
+  delta_3 = a_3 - y_bin'; % 10*1
+  
+  % Step 3: Compute delta in layer 2
+  delta_2 = Theta2' * delta_3 .* a_2 .* (1 - a_2); % 26*1
+  %delta_2 = Theta2(:,2:end)' * delta_3 .* sigmoidGradient(z_2); %25*1
+  
+  % Step 4: Compute Delta each layer
+  Delta_2 = Delta_2 + delta_3 * a_2';
+  Delta_1 = Delta_1 + delta_2(2:end) * a_1';
+  
+endfor
+
+% Step 5: Compute gradients
+
+% j = 0
+Theta1_grad_0 = 1 / m * Delta_1(:,1);
+Theta2_grad_0 = 1 / m * Delta_2(:,1);
+
+% j = 1
+Theta1_grad_rest = 1 / m * Delta_1(:,2:end) + lambda / m * Theta1(:,2:end);
+Theta2_grad_rest = 1 / m * Delta_2(:,2:end) + lambda / m * Theta2(:,2:end);
+%Theta2_grad = 1 / m * Delta_2;
+
+Theta1_grad = [Theta1_grad_0 Theta1_grad_rest];
+Theta2_grad = [Theta2_grad_0 Theta2_grad_rest];
 
 % =========================================================================
 
