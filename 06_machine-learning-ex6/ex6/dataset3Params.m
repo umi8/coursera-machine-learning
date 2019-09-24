@@ -24,10 +24,35 @@ sigma = 0.3;
 %
 
 
+C_list = [0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30];
+sigma_list = [0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30];
+params_list = zeros(length(C_list) * length(sigma_list), 3);
+p = 1;
+for i = 1:length(C_list)
 
+  C = C_list(i);
+  
+  for j = 1:length(sigma_list)
+    
+    sigma = sigma_list(j);
+    
+    model= svmTrain(X, y, C, @(x1, x2) gaussianKernel(x1, x2, sigma));
+    
+    predictions = svmPredict(model, Xval);
+    
+    m = mean(double(predictions ~= yval));
+    
+    params_list(p,:) = [C, sigma, m];
+    p += 1;
+      
+  endfor
+   
+endfor
 
+[val,index] = min(params_list(:,3));
 
-
+C = params_list(index, 1);
+sigma = params_list(index,2);
 
 % =========================================================================
 
