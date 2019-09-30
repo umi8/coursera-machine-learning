@@ -26,11 +26,31 @@ centroids = zeros(K, n);
 % Note: You can use a for-loop over the centroids to compute this.
 %
 
+% for k = 1:K
+%   
+%   sum = 0;
+%   numOfPoints = 0;
+%   
+%   for i = 1:m
+%     if idx(i) == k
+%       sum += X(i,:);
+%       numOfPoints += 1;
+%     endif
+%   endfor
+%   
+%   centroids(k,:) = (1 / numOfPoints) * sum;
+% endfor
 
-
-
-
-
+for k = 1:K
+  
+  tgtK = idx == k;
+  
+  numOfPoints = sum(tgtK);
+  
+  val = tgtK' * X;
+  
+  centroids(k,:) = (1 / numOfPoints) * val; 
+endfor
 
 
 % =============================================================
